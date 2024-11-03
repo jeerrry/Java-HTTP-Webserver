@@ -1,6 +1,6 @@
 public class RequestFactory {
     public static Request getRequest(String request) throws InvalidRequestException {
-        String[] parts = request.split("\r\n\r\n");
+        String[] parts = request.split("\r\n");
 
         // Process request line
         String[] requestParts = parts[0].split(" ");
@@ -9,13 +9,13 @@ public class RequestFactory {
             throw new InvalidRequestException("Undefined request: " + request);
         }
 
-        String target = parts[1];
+        String target = requestParts[1];
         if (target.isBlank()) {
-            throw new InvalidRequestException("Empty target: " + target);
+            throw new IllegalArgumentException("Empty target: " + target);
         }
 
-        String[] protocol = parts[2].split("/");
+        String[] protocol = requestParts[2].split("/");
 
-        return new Request(new Protocol(protocol[0], protocol[1]), method);
+        return new Request(new Protocol(protocol[0], protocol[1]), method, target);
     }
 }

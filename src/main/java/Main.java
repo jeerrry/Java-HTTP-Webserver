@@ -3,7 +3,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.http.HttpRequest;
 
 public class Main {
     private static final byte[] buffer = new byte[1024];
@@ -31,10 +30,11 @@ public class Main {
             var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
             try {
                 var httpRequest = RequestFactory.getRequest(request);
+                response.setStatus(HTTPStatusCodes.OK);
             } catch (InvalidRequestException e) {
+                response.setStatus(HTTPStatusCodes.NOTFOUND);
                 throw new RuntimeException(e);
             } finally {
-                response.setStatus(HTTPStatusCodes.NOTFOUND.toString());
                 writer.println(response);
                 writer.flush();
                 writer.close();

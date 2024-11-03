@@ -8,12 +8,12 @@ public class Response {
         this.protocol = protocol;
         this.sectionSeparator = sectionSeparator;
 
-        setStatus(statusCode.toString());
+        setStatus(statusCode);
     }
 
-    public void setStatus(String statusCode) {
+    public void setStatus(HTTPStatusCodes.StatusCode statusCode) {
         builder = new StringBuilder();
-        builder.append(protocol.toString()).append(" ").append(statusCode).append(sectionSeparator);
+        builder.append(protocol.toString()).append(" ").append(statusCode.toString()).append(sectionSeparator);
     }
 
     @Override
