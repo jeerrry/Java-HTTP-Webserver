@@ -8,7 +8,9 @@ public class Main {
         // You can use print statements as follows for debugging, they'll be visible when running tests.
         System.out.println("Logs from your program will appear here!");
 
-        // Uncomment this block to pass the first stage
+        var protocol = new Protocol("HTTP", "1.1");
+        var response = new Response(protocol, "\r\n\r\n");
+        response.addHeader(HTTPStatusCodes.OK.toString());
 
         try {
             ServerSocket serverSocket = new ServerSocket(4221);
@@ -19,7 +21,7 @@ public class Main {
 
             Socket request = serverSocket.accept(); // Wait for connection from client.
             var writer = new PrintWriter(request.getOutputStream());
-            writer.println("HTTP/1.1 200 OK\r\n\r\n");
+            writer.println(response);
             writer.flush();
             writer.close();
 
