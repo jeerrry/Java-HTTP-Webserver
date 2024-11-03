@@ -7,4 +7,5 @@ public class HTTPStatusCodes {
     }
 
     public static final StatusCode OK = new StatusCode(200, "OK");
+    public static final StatusCode NOTFOUND = new StatusCode(404, "NOT FOUND");
 }

@@ -1,16 +1,19 @@
 public class Response {
     private final Protocol protocol;
-    private final StringBuilder builder;
-    private final String sectionSeperator;
+    private StringBuilder builder;
+    private final String sectionSeparator;
 
-    public Response(Protocol protocol, String sectionSeparator) {
+    public Response(Protocol protocol, HTTPStatusCodes.StatusCode statusCode, String sectionSeparator) {
         builder = new StringBuilder();
         this.protocol = protocol;
-        this.sectionSeperator = sectionSeparator;
+        this.sectionSeparator = sectionSeparator;
+
+        setStatus(statusCode.toString());
     }
 
-    public void addHeader(String statusCode) {
-        builder.append(protocol.toString()).append(" ").append(statusCode).append(sectionSeperator);
+    public void setStatus(String statusCode) {
+        builder = new StringBuilder();
+        builder.append(protocol.toString()).append(" ").append(statusCode).append(sectionSeparator);
     }
 
     @Override
