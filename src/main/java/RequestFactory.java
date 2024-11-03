@@ -10,7 +10,7 @@ public class RequestFactory {
         }
 
         String target = requestParts[1];
-        if (target.isBlank()) {
+        if (target.isBlank() || !target.equals("/")) {
             throw new IllegalArgumentException("Empty target: " + target);
         }
 
