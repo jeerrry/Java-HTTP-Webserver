@@ -11,7 +11,7 @@ public class RequestFactory {
 
         String target = requestParts[1];
         if (target.isBlank() || !target.equals("/")) {
-            throw new IllegalArgumentException("Empty target: " + target);
+            throw new InvalidRequestException("Empty target: " + target);
         }
 
         String[] protocol = requestParts[2].split("/");
