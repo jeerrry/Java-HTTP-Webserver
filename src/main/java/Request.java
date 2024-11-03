@@ -20,4 +20,8 @@ public class Request {
     public void addHeader(String key, String value) {
         headers.put(key, value + "\r\n");
     }
+
+    public String getTarget() {
+        return target;
+    }
 }

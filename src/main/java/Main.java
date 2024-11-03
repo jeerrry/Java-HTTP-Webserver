@@ -3,6 +3,9 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 public class Main {
     private static final byte[] buffer = new byte[1024];
@@ -12,6 +15,7 @@ public class Main {
         System.out.println("Logs from your program will appear here!");
 
         ServerSocket serverSocket;
+        var paths = new HashSet<String>(List.of("/"));
         var protocol = new Protocol("HTTP", "1.1");
 
         try {
@@ -30,9 +34,12 @@ public class Main {
             var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
             try {
                 var httpRequest = RequestFactory.getRequest(request);
-                response.setStatus(HTTPStatusCodes.OK);
+                if (paths.contains(httpRequest.getTarget())) {
+                    response.setStatus(HTTPStatusCodes.OK);
+                }else {
+                    response.setStatus(HTTPStatusCodes.NOTFOUND);
+                }
             } catch (InvalidRequestException e) {
-                response.setStatus(HTTPStatusCodes.NOTFOUND);
                 throw new RuntimeException(e);
             } finally {
                 writer.println(response);
