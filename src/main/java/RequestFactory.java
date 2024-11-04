@@ -9,13 +9,13 @@ public class RequestFactory {
             throw new InvalidRequestException("Undefined request: " + request);
         }
 
-        String target = requestParts[1];
-        if (target.isBlank()) {
-            throw new InvalidRequestException("Empty target: " + target);
+        String path = requestParts[1];
+        if (path.isBlank()) {
+            throw new InvalidRequestException("Empty path: " + path);
         }
 
         String[] protocol = requestParts[2].split("/");
 
-        return new Request(new Protocol(protocol[0], protocol[1]), method, target);
+        return new Request(new Protocol(protocol[0], protocol[1]), method, path);
     }
 }

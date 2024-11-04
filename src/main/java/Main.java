@@ -14,7 +14,6 @@ public class Main {
         System.out.println("Logs from your program will appear here!");
 
         ServerSocket serverSocket;
-        var paths = new HashSet<String>(List.of("/"));
         var protocol = new Protocol("HTTP", "1.1");
 
         try {
@@ -23,6 +22,9 @@ public class Main {
             // Since the tester restarts your program quite often, setting SO_REUSEADDR
             // ensures that we don't run into 'Address already in use' errors
             serverSocket.setReuseAddress(true);
+
+            // Register all server paths here.
+            Router.getInstance().registerRoute("/", request -> new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n"));
 
             Socket rawRequest = serverSocket.accept(); // Wait for connection from client.
             InputStream stream = rawRequest.getInputStream();
@@ -33,12 +35,9 @@ public class Main {
             var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
             try {
                 var httpRequest = RequestFactory.getRequest(request);
-                if (paths.contains(httpRequest.getTarget())) {
-                    response.setStatus(HTTPStatusCodes.OK);
-                }else {
-                    response.setStatus(HTTPStatusCodes.NOTFOUND);
-                }
+                response = Router.getInstance().handleRequest(httpRequest);
             } catch (InvalidRequestException e) {
+                response.setStatus(HTTPStatusCodes.NOTFOUND);
                 throw new RuntimeException(e);
             } finally {
                 writer.println(response);
