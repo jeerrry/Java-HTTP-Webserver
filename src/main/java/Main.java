@@ -3,13 +3,11 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.List;
 
 public class Main {
     private static final byte[] buffer = new byte[1024];
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InvalidRequestException {
         // You can use print statements as follows for debugging, they'll be visible when running tests.
         System.out.println("Logs from your program will appear here!");
 
@@ -24,7 +22,22 @@ public class Main {
             serverSocket.setReuseAddress(true);
 
             // Register all server paths here.
-            Router.getInstance().registerRoute("/", request -> new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n"));
+            Router
+                    .getInstance()
+                    .registerRoute("/", request -> new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n"));
+            Router
+                    .getInstance()
+                    .registerRoute("/echo/{str}", request -> {
+                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n");
+
+                        String body = request.getRouteParams().get("str");
+                        response.addHeader("Content-Type", "text/plain");
+                        response.addHeader("Content-Length", body.length() + "");
+
+                        response.addBodyContent(body);
+
+                        return response;
+                    });
 
             Socket rawRequest = serverSocket.accept(); // Wait for connection from client.
             InputStream stream = rawRequest.getInputStream();
