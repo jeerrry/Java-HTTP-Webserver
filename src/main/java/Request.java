@@ -20,7 +20,7 @@ public class Request {
     }
 
     public void addHeader(String key, String value) {
-        headers.put(key, value + "\r\n");
+        headers.put(key, value);
     }
 
     public void addPathParam(String key, String value) {
