@@ -38,6 +38,19 @@ public class Main {
 
                         return response;
                     });
+            Router
+                    .getInstance()
+                    .registerRoute("/user-agent", request -> {
+                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n");
+
+                        String body = request.getHeaders().get("User-Agent");
+                        response.addHeader("Content-Type", "text/plain");
+                        response.addHeader("Content-Length", body.length() + "");
+
+                        response.addBodyContent(body);
+
+                        return response;
+                    });
 
             Socket rawRequest = serverSocket.accept(); // Wait for connection from client.
             InputStream stream = rawRequest.getInputStream();
