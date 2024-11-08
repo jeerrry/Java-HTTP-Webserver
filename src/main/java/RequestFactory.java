@@ -1,8 +1,14 @@
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class RequestFactory {
     public static Request getRequest(String request) throws InvalidRequestException {
         String[] parts = request.split("\r\n");
 
-        return getStatusLine(parts[0]);
+        var req = getStatusLine(parts[0]);
+        processHeaders(req, Arrays.stream(parts, 1, parts.length).collect(Collectors.joining("\r\n")));
+
+        return req;
     }
 
     private static Request getStatusLine(String statusLine) throws InvalidRequestException {
