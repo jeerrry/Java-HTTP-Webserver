@@ -1,11 +1,8 @@
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Main {
-    private static final byte[] buffer = new byte[1024];
 
     public static void main(String[] args) throws InvalidRequestException {
         // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -52,25 +49,12 @@ public class Main {
                         return response;
                     });
 
-            Socket rawRequest = serverSocket.accept(); // Wait for connection from client.
-            InputStream stream = rawRequest.getInputStream();
-            int size = stream.read(buffer);
-            String request = new String(buffer, 0, size);
-
-            var writer = new PrintWriter(rawRequest.getOutputStream());
-            var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
-            try {
-                var httpRequest = RequestFactory.getRequest(request);
-                response = Router.getInstance().handleRequest(httpRequest);
-            } catch (InvalidRequestException e) {
-                response.setStatus(HTTPStatusCodes.NOTFOUND);
-                throw new RuntimeException(e);
-            } finally {
-                writer.println(response);
-                writer.flush();
-                writer.close();
+            while (true) {
+                Socket clientConnection = serverSocket.accept(); // Wait for connection from client.
+                System.out.println("accepted new connection");
+                var temp = new Thread(new SocketConnectionHandler(clientConnection, protocol));
+                temp.start();
             }
-            System.out.println("accepted new connection");
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         }
