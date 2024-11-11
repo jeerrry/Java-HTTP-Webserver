@@ -52,8 +52,7 @@ public class Main {
             while (true) {
                 Socket clientConnection = serverSocket.accept(); // Wait for connection from client.
                 System.out.println("accepted new connection");
-                var temp = new Thread(new SocketConnectionHandler(clientConnection, protocol));
-                temp.start();
+                new Thread(new SocketConnectionHandler(clientConnection, protocol)).start();
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
