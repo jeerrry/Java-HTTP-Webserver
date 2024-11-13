@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
 
 public class Main {
 
@@ -69,6 +70,15 @@ public class Main {
 
                         response.addHeader("Content-Type", "application/octet-stream");
                         response.addHeader("Content-Length", file.length() + "");
+
+                        String body = "";
+                        try {
+                            body = Files.readString(file.toPath());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        response.addBodyContent(body);
 
                         return response;
                     });
