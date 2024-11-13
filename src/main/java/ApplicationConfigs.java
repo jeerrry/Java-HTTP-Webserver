@@ -17,7 +17,7 @@ public class ApplicationConfigs {
 
     private ApplicationConfigs(String[] args) throws ParseException {
         var options = new Options();
-        options.addOption("-d", "--directory", true, "Directory holding server files");
+        options.addOption("d", "directory", false, "Directory holding server files");
 
         var parser = new DefaultParser();
         cmd = parser.parse(options, args);
