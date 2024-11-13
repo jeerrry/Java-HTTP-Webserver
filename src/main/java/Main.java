@@ -26,11 +26,11 @@ public class Main {
             // Register all server paths here.
             Router
                     .getInstance()
-                    .registerRoute("/", request -> new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n"));
+                    .registerRoute("/", request -> new Response(protocol, HTTPStatusCodes.OK));
             Router
                     .getInstance()
                     .registerRoute("/echo/{str}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
+                        var response = new Response(protocol, HTTPStatusCodes.OK);
 
                         String body = request.getRouteParams().get("str");
                         response.addHeader("Content-Type", "text/plain");
@@ -43,7 +43,7 @@ public class Main {
             Router
                     .getInstance()
                     .registerRoute("/user-agent", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
+                        var response = new Response(protocol, HTTPStatusCodes.OK);
 
                         String body = request.getHeaders().get("User-Agent");
                         response.addHeader("Content-Type", "text/plain");
@@ -57,28 +57,25 @@ public class Main {
             Router
                     .getInstance()
                     .registerRoute("/files/{filename}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
+                        var response = new Response(protocol, HTTPStatusCodes.OK);
                         String directory = applicationConfigs.getFilesDirectory();
                         String fileName = request.getRouteParams().get("filename");
 
                         var file = new File(directory, fileName);
-                        if (!file.exists()) {
+                        if (directory.isBlank() || !file.exists()) {
                             response.setStatus(HTTPStatusCodes.NOTFOUND);
 
                             return response;
                         }
 
-                        response.addHeader("Content-Type", "application/octet-stream");
-                        response.addHeader("Content-Length", file.length() + "");
-
-                        String body = "";
                         try {
-                            body = Files.readString(file.toPath());
+                            byte[] fileContent = Files.readAllBytes(file.toPath());
+                            response.addHeader("Content-Type", "application/octet-stream");
+                            response.addHeader("Content-Length", fileContent.length + "");
+                            response.addBodyContent(new String(fileContent));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-
-                        response.addBodyContent(body);
 
                         return response;
                     });

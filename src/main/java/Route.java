@@ -19,8 +19,6 @@ public class Route {
                 var route = new Route();
                 route.value = path;
                 current.paths.put(path, route);
-                current.isComplete = i == fullPath.length - 1;
-                current.fullPath = current.isComplete ? rawPath : null;
             }
             current = current.paths.get(path);
         }
@@ -30,6 +28,7 @@ public class Route {
         }
 
         current.isComplete = true;
+        current.fullPath = rawPath;
     }
 
     public void processRequest(Request request) throws InvalidRequestException {
@@ -43,17 +42,17 @@ public class Route {
             if (path.isBlank()) continue;
 
             if (current.paths.containsKey(path)) {
-                validPath = current.isComplete;
-                currentFullPath = current.fullPath;
                 current = current.paths.get(path);
+                currentFullPath = current.fullPath;
+                validPath = current.isComplete;
                 continue;
             }
 
             if (current.paths.containsKey("{*}")) {
+                current = current.paths.get("{*}");
                 validPath = current.isComplete;
                 currentFullPath = current.fullPath;
                 routeParamValues.add(path);
-                current = current.paths.get(path);
                 continue;
             }
 
@@ -64,7 +63,8 @@ public class Route {
             throw new InvalidRequestException("Provided path does not exist");
         }
 
-        List<String> routeParamNames = Arrays.stream(currentFullPath.split("/")).filter(x -> x.startsWith("{") && x.endsWith("}")).toList();
+
+        List<String> routeParamNames = currentFullPath != null ? Arrays.stream(currentFullPath.split("/")).filter(x -> x.startsWith("{") && x.endsWith("}")).toList() : new ArrayList<>();
         for (int i = 0; i < routeParamNames.size(); i++) {
             String param = routeParamNames.get(i).substring(1, routeParamNames.get(i).length() - 1);
             String value = routeParamValues.get(i);

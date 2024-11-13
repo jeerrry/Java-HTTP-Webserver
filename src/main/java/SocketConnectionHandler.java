@@ -22,7 +22,7 @@ public class SocketConnectionHandler implements Runnable{
             String request = new String(buffer, 0, size);
 
             var writer = new PrintWriter(socket.getOutputStream());
-            var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
+            var response = new Response(protocol, HTTPStatusCodes.OK);
             try {
                 var httpRequest = RequestFactory.getRequest(request);
                 response = Router.getInstance().handleRequest(httpRequest);

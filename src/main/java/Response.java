@@ -1,26 +1,24 @@
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Response {
     private final Protocol protocol;
     private final StringBuilder body;
     private StringBuilder builder;
-    private final String sectionSeparator;
     private final Map<String, String> headers;
 
-    public Response(Protocol protocol, HTTPStatusCodes.StatusCode statusCode, String sectionSeparator) {
+    public Response(Protocol protocol, HTTPStatusCodes.StatusCode statusCode) {
         builder = new StringBuilder();
         body = new StringBuilder();
         this.protocol = protocol;
-        this.sectionSeparator = sectionSeparator;
-        headers = new HashMap<>();
+        headers = new LinkedHashMap<>();
 
         setStatus(statusCode);
     }
 
     public void setStatus(HTTPStatusCodes.StatusCode statusCode) {
         builder = new StringBuilder();
-        builder.append(protocol.toString()).append(" ").append(statusCode.toString()).append(sectionSeparator);
+        builder.append(protocol.toString()).append(" ").append(statusCode.toString()).append("\r\n");
     }
 
     public void addHeader(String key, String value) {
@@ -29,7 +27,6 @@ public class Response {
 
     private String buildHeaders() {
         StringBuilder result = new StringBuilder();
-        if (headers.isEmpty()) return "";
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             result.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
