@@ -62,7 +62,7 @@ public class Main {
 
                         var file = new File(directory, fileName);
                         if (!file.exists()) {
-                            response.setStatus(HTTPStatusCodes.NOTFOUND);
+                            response = new Response(protocol, HTTPStatusCodes.NOTFOUND, "\r\n");
 
                             return response;
                         }
