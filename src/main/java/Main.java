@@ -29,7 +29,7 @@ public class Main {
             Router
                     .getInstance()
                     .registerRoute("/echo/{str}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n");
+                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
 
                         String body = request.getRouteParams().get("str");
                         response.addHeader("Content-Type", "text/plain");
@@ -42,7 +42,7 @@ public class Main {
             Router
                     .getInstance()
                     .registerRoute("/user-agent", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n");
+                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
 
                         String body = request.getHeaders().get("User-Agent");
                         response.addHeader("Content-Type", "text/plain");
@@ -56,13 +56,13 @@ public class Main {
             Router
                     .getInstance()
                     .registerRoute("/files/{filename}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n");
+                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n\r\n");
                         String directory = applicationConfigs.getFilesDirectory();
                         String fileName = request.getRouteParams().get("filename");
 
                         var file = new File(directory, fileName);
                         if (!file.exists()) {
-                            response = new Response(protocol, HTTPStatusCodes.NOTFOUND, "\r\n");
+                            response.setStatus(HTTPStatusCodes.NOTFOUND);
 
                             return response;
                         }
