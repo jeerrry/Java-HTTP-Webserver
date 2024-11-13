@@ -1,15 +1,19 @@
+import org.apache.commons.cli.ParseException;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Main {
 
-    public static void main(String[] args) throws InvalidRequestException {
+    public static void main(String[] args) throws InvalidRequestException, ParseException {
         // You can use print statements as follows for debugging, they'll be visible when running tests.
         System.out.println("Logs from your program will appear here!");
 
         ServerSocket serverSocket;
         var protocol = new Protocol("HTTP", "1.1");
+        ApplicationConfigs applicationConfigs = ApplicationConfigs.getInstance(args);
 
         try {
             serverSocket = new ServerSocket(4221);
@@ -45,6 +49,26 @@ public class Main {
                         response.addHeader("Content-Length", body.length() + "");
 
                         response.addBodyContent(body);
+
+                        return response;
+                    });
+
+            Router
+                    .getInstance()
+                    .registerRoute("/files/{filename}", request -> {
+                        var response = new Response(protocol, HTTPStatusCodes.OK, "\r\n");
+                        String directory = applicationConfigs.getFilesDirectory();
+                        String fileName = request.getRouteParams().get("filename");
+
+                        var file = new File(directory, fileName);
+                        if (!file.exists()) {
+                            response.setStatus(HTTPStatusCodes.NOTFOUND);
+
+                            return response;
+                        }
+
+                        response.addHeader("Content-Type", "application/octet-stream");
+                        response.addHeader("Content-Length", file.length() + "");
 
                         return response;
                     });
