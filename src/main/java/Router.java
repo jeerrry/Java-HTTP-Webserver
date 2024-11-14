@@ -5,7 +5,7 @@ import java.util.function.Function;
 public class Router {
     private static Router instance;
     private final Route route = new Route();
-    private final Map<String, Function<Request, Response>> routes = new HashMap<>();
+    private final Map<Object, Function<Request, Response>> routes = new HashMap<>();
 
     public static Router getInstance() {
         if (instance == null) {
@@ -17,14 +17,14 @@ public class Router {
     private Router() {
     }
 
-    public void registerRoute(String rawPath, Function<Request, Response> handler) throws InvalidRequestException {
+    public void registerRoute(RequestMethod method, String rawPath, Function<Request, Response> handler) throws InvalidRequestException {
         route.patchRouteNodes(rawPath);
-        routes.put(rawPath, handler);
+        routes.put(method + ":" + rawPath, handler);
     }
 
-    public Response handleRequest(Request request) throws InvalidRequestException {
+    public Response handleRequest(RequestMethod method, Request request) throws InvalidRequestException {
         route.processRequest(request);
-        Function<Request, Response> handler = routes.get(request.getPath());
+        Function<Request, Response> handler = routes.get(method + ":" + request.getPath());
         if (handler == null) {
             throw new InvalidRequestException("Undefined request path: " + request);
         }

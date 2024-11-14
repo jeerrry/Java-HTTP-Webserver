@@ -26,10 +26,10 @@ public class Main {
             // Register all server paths here.
             Router
                     .getInstance()
-                    .registerRoute("/", request -> new Response(protocol, HTTPStatusCodes.OK));
+                    .registerRoute(RequestMethod.GET, "/", request -> new Response(protocol, HTTPStatusCodes.OK));
             Router
                     .getInstance()
-                    .registerRoute("/echo/{str}", request -> {
+                    .registerRoute(RequestMethod.GET, "/echo/{str}", request -> {
                         var response = new Response(protocol, HTTPStatusCodes.OK);
 
                         String body = request.getRouteParams().get("str");
@@ -42,7 +42,7 @@ public class Main {
                     });
             Router
                     .getInstance()
-                    .registerRoute("/user-agent", request -> {
+                    .registerRoute(RequestMethod.GET, "/user-agent", request -> {
                         var response = new Response(protocol, HTTPStatusCodes.OK);
 
                         String body = request.getHeaders().get("User-Agent");
@@ -56,7 +56,33 @@ public class Main {
 
             Router
                     .getInstance()
-                    .registerRoute("/files/{filename}", request -> {
+                    .registerRoute(RequestMethod.GET, "/files/{filename}", request -> {
+                        var response = new Response(protocol, HTTPStatusCodes.OK);
+                        String directory = applicationConfigs.getFilesDirectory();
+                        String fileName = request.getRouteParams().get("filename");
+
+                        var file = new File(directory, fileName);
+                        if (directory.isBlank() || !file.exists()) {
+                            response.setStatus(HTTPStatusCodes.NOTFOUND);
+
+                            return response;
+                        }
+
+                        try {
+                            byte[] fileContent = Files.readAllBytes(file.toPath());
+                            response.addHeader("Content-Type", "application/octet-stream");
+                            response.addHeader("Content-Length", fileContent.length + "");
+                            response.addBodyContent(new String(fileContent));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        return response;
+                    });
+
+            Router
+                    .getInstance()
+                    .registerRoute(RequestMethod.POST, "/files/{filename}", request -> {
                         var response = new Response(protocol, HTTPStatusCodes.OK);
                         String directory = applicationConfigs.getFilesDirectory();
                         String fileName = request.getRouteParams().get("filename");
