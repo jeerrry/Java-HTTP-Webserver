@@ -83,22 +83,21 @@ public class Main {
             Router
                     .getInstance()
                     .registerRoute(RequestMethod.POST, "/files/{filename}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK);
+                        var response = new Response(protocol, HTTPStatusCodes.CREATED);
                         String directory = applicationConfigs.getFilesDirectory();
                         String fileName = request.getRouteParams().get("filename");
 
                         var file = new File(directory, fileName);
-                        if (directory.isBlank() || !file.exists()) {
+                        if (directory.isBlank() || file.exists()) {
                             response.setStatus(HTTPStatusCodes.NOTFOUND);
 
                             return response;
                         }
 
                         try {
-                            byte[] fileContent = Files.readAllBytes(file.toPath());
-                            response.addHeader("Content-Type", "application/octet-stream");
-                            response.addHeader("Content-Length", fileContent.length + "");
-                            response.addBodyContent(new String(fileContent));
+                            if(file.createNewFile()) {
+                                Files.write(file.toPath(), request.getBody().getBytes());
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
