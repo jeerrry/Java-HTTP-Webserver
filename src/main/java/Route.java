@@ -4,9 +4,10 @@ public class Route {
     private String value = "/";
     private String fullPath;
     private boolean isComplete;
+    private HashSet<RequestMethod> methods = new HashSet<>();
     private Map<String, Route> paths = new HashMap<>();
 
-    public void patchRouteNodes(String rawPath) throws InvalidRequestException {
+    public void patchRouteNodes(RequestMethod method, String rawPath) throws InvalidRequestException {
         Route current = this;
         String[] fullPath = rawPath.split("/");
         for (int i = 0; i < fullPath.length; i++) {
@@ -23,12 +24,13 @@ public class Route {
             current = current.paths.get(path);
         }
 
-        if (current.isComplete) {
+        if (current.isComplete && current.methods.contains(method)) {
             throw new InvalidRequestException("Provided path already exists");
         }
 
         current.isComplete = true;
         current.fullPath = rawPath;
+        current.methods.add(method);
     }
 
     public void processRequest(Request request) throws InvalidRequestException {
@@ -44,13 +46,13 @@ public class Route {
             if (current.paths.containsKey(path)) {
                 current = current.paths.get(path);
                 currentFullPath = current.fullPath;
-                validPath = current.isComplete;
+                validPath = current.isComplete && current.methods.contains(request.getRequestMethod());
                 continue;
             }
 
             if (current.paths.containsKey("{*}")) {
                 current = current.paths.get("{*}");
-                validPath = current.isComplete;
+                validPath = current.isComplete && current.methods.contains(request.getRequestMethod());
                 currentFullPath = current.fullPath;
                 routeParamValues.add(path);
                 continue;

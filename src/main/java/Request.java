@@ -7,12 +7,12 @@ public class Request {
     private String path;
     private final Map<String, String> headers;
     private final Map<String, String> routeParams;
-    private final Map<String, String> bodyParams;
+    private String body;
 
     public Request(Protocol protocol, RequestMethod requestMethod, String path) {
         headers = new HashMap<>();
         routeParams = new HashMap<>();
-        bodyParams = new HashMap<>();
+        body = "";
 
         this.protocol = protocol;
         this.requestMethod = requestMethod;
@@ -27,8 +27,8 @@ public class Request {
         routeParams.put(key, value);
     }
 
-    public void addBodyParam(String key, String value) {
-        bodyParams.put(key, value);
+    public void setBody(String body) {
+        this.body = body;
     }
 
     public Protocol getProtocol() {
@@ -47,8 +47,8 @@ public class Request {
         return routeParams;
     }
 
-    public Map<String, String> getBodyParam() {
-        return bodyParams;
+    public String getBody() {
+        return body;
     }
 
     public String getPath() {

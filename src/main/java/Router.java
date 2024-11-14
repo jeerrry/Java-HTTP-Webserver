@@ -18,13 +18,13 @@ public class Router {
     }
 
     public void registerRoute(RequestMethod method, String rawPath, Function<Request, Response> handler) throws InvalidRequestException {
-        route.patchRouteNodes(rawPath);
+        route.patchRouteNodes(method, rawPath);
         routes.put(method + ":" + rawPath, handler);
     }
 
-    public Response handleRequest(RequestMethod method, Request request) throws InvalidRequestException {
+    public Response handleRequest(Request request) throws InvalidRequestException {
         route.processRequest(request);
-        Function<Request, Response> handler = routes.get(method + ":" + request.getPath());
+        Function<Request, Response> handler = routes.get(request.getRequestMethod() + ":" + request.getPath());
         if (handler == null) {
             throw new InvalidRequestException("Undefined request path: " + request);
         }

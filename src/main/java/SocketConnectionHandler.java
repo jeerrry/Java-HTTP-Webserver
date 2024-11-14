@@ -25,7 +25,7 @@ public class SocketConnectionHandler implements Runnable {
             var response = new Response(protocol, HTTPStatusCodes.OK);
             try {
                 Request httpRequest = RequestFactory.getRequest(request);
-                response = Router.getInstance().handleRequest(httpRequest.getRequestMethod(), httpRequest);
+                response = Router.getInstance().handleRequest(httpRequest);
             } catch (InvalidRequestException e) {
                 response.setStatus(HTTPStatusCodes.NOTFOUND);
                 throw new RuntimeException(e);
