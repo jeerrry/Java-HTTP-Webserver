@@ -1,128 +1,45 @@
 import configuration.ApplicationConfigs;
 import exceptions.InvalidRequestException;
-import http.core.*;
 import http.core.RequestMethod;
-import infrastructure.networking.HTTPStatusCodes;
-import infrastructure.networking.Protocol;
+import http.handler.*;
+import http.middleware.EncodingMiddleware;
 import infrastructure.networking.SocketConnectionHandler;
 import infrastructure.routing.Router;
 import org.apache.commons.cli.ParseException;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
 
 public class Main {
 
     public static void main(String[] args) throws InvalidRequestException, ParseException {
-        // You can use print statements as follows for debugging, they'll be visible when running tests.
-        System.out.println("Logs from your program will appear here!");
-
         ServerSocket serverSocket;
-        var protocol = new Protocol("HTTP", "1.1");
-        ApplicationConfigs applicationConfigs = ApplicationConfigs.getInstance(args);
+        ApplicationConfigs.init(args);
+
+        Router
+                .getInstance()
+                .registerRoute(RequestMethod.GET, "/", new RootRequest(null));
+        Router
+                .getInstance()
+                .registerRoute(RequestMethod.GET, "/echo/{str}", new EncodingMiddleware(new EchoRequest(null)));
+        Router
+                .getInstance()
+                .registerRoute(RequestMethod.GET, "/user-agent", new UserAgentRequest(null));
+        Router
+                .getInstance()
+                .registerRoute(RequestMethod.GET, "/files/{filename}", new FileReadRequest(null));
+        Router
+                .getInstance()
+                .registerRoute(RequestMethod.POST, "/files/{filename}", new WriteFileRequest(null));
 
         try {
             serverSocket = new ServerSocket(4221);
-
-            // Since the tester restarts your program quite often, setting SO_REUSEADDR
-            // ensures that we don't run into 'Address already in use' errors
             serverSocket.setReuseAddress(true);
-
-            // Register all server paths here.
-            Router
-                    .getInstance()
-                    .registerRoute(RequestMethod.GET, "/", request -> new Response(protocol, HTTPStatusCodes.OK));
-            Router
-                    .getInstance()
-                    .registerRoute(RequestMethod.GET, "/echo/{str}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK);
-
-                        String body = request.getRouteParams().get("str");
-                        response.addHeader("Content-Type", "text/plain");
-                        response.addHeader("Content-Length", body.length() + "");
-                        if(request.getHeaders().containsKey("Accept-Encoding")) {
-                            String value = request.getHeaders().get("Accept-Encoding");
-                            if(value.equals("gzip")) {
-                                response.addHeader("Content-Encoding", "gzip");
-                            }
-                        }
-
-                        response.addBodyContent(body);
-
-                        return response;
-                    });
-            Router
-                    .getInstance()
-                    .registerRoute(RequestMethod.GET, "/user-agent", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK);
-
-                        String body = request.getHeaders().get("User-Agent");
-                        response.addHeader("Content-Type", "text/plain");
-                        response.addHeader("Content-Length", body.length() + "");
-
-                        response.addBodyContent(body);
-
-                        return response;
-                    });
-
-            Router
-                    .getInstance()
-                    .registerRoute(RequestMethod.GET, "/files/{filename}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.OK);
-                        String directory = applicationConfigs.getFilesDirectory();
-                        String fileName = request.getRouteParams().get("filename");
-
-                        var file = new File(directory, fileName);
-                        if (directory.isBlank() || !file.exists()) {
-                            response.setStatus(HTTPStatusCodes.NOTFOUND);
-
-                            return response;
-                        }
-
-                        try {
-                            byte[] fileContent = Files.readAllBytes(file.toPath());
-                            response.addHeader("Content-Type", "configuration/octet-stream");
-                            response.addHeader("Content-Length", fileContent.length + "");
-                            response.addBodyContent(new String(fileContent));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        return response;
-                    });
-
-            Router
-                    .getInstance()
-                    .registerRoute(RequestMethod.POST, "/files/{filename}", request -> {
-                        var response = new Response(protocol, HTTPStatusCodes.CREATED);
-                        String directory = applicationConfigs.getFilesDirectory();
-                        String fileName = request.getRouteParams().get("filename");
-
-                        var file = new File(directory, fileName);
-                        if (directory.isBlank() || file.exists()) {
-                            response.setStatus(HTTPStatusCodes.NOTFOUND);
-
-                            return response;
-                        }
-
-                        try {
-                            if(file.createNewFile()) {
-                                Files.write(file.toPath(), request.getBody().getBytes());
-                            }
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        return response;
-                    });
-
             while (true) {
                 Socket clientConnection = serverSocket.accept(); // Wait for connection from client.
                 System.out.println("accepted new connection");
-                new Thread(new SocketConnectionHandler(clientConnection, protocol)).start();
+                new Thread(new SocketConnectionHandler(clientConnection)).start();
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());

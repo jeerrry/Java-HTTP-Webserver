@@ -26,6 +26,10 @@ public class Response {
         builder.append(protocol.toString()).append(" ").append(statusCode.toString()).append("\r\n");
     }
 
+    public void cleanHeaders() {
+        headers.clear();
+    }
+
     public void addHeader(String key, String value) {
         headers.put(key, value);
     }
@@ -38,6 +42,10 @@ public class Response {
         }
 
         return result + "\r\n";
+    }
+
+    public void clearBody() {
+        body.delete(0, body.length());
     }
 
     public void addBodyContent(String content) {

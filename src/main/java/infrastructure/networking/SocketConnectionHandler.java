@@ -1,5 +1,6 @@
 package infrastructure.networking;
 
+import configuration.ApplicationConfigs;
 import exceptions.InvalidRequestException;
 import http.core.Request;
 import http.core.RequestFactory;
@@ -14,12 +15,10 @@ import java.net.Socket;
 public class SocketConnectionHandler implements Runnable {
     private final Socket socket;
     private final byte[] buffer;
-    private final Protocol protocol;
 
-    public SocketConnectionHandler(Socket socket, Protocol protocol) {
+    public SocketConnectionHandler(Socket socket) {
         this.socket = socket;
         buffer = new byte[1024];
-        this.protocol = protocol;
     }
 
     @Override
@@ -30,7 +29,7 @@ public class SocketConnectionHandler implements Runnable {
             String request = new String(buffer, 0, size);
 
             var writer = new PrintWriter(socket.getOutputStream());
-            var response = new Response(protocol, HTTPStatusCodes.OK);
+            var response = new Response(ApplicationConfigs.PROTOCOL, HTTPStatusCodes.OK);
             try {
                 Request httpRequest = RequestFactory.getRequest(request);
                 response = Router.getInstance().handleRequest(httpRequest);
