@@ -11,12 +11,14 @@ public class Response {
     private final StringBuilder body;
     private StringBuilder builder;
     private final Map<String, String> headers;
+    private byte[] bodyBytes;
 
     public Response(Protocol protocol, HTTPStatusCodes.StatusCode statusCode) {
         builder = new StringBuilder();
         body = new StringBuilder();
         this.protocol = protocol;
         headers = new LinkedHashMap<>();
+        bodyBytes = new byte[0];
 
         setStatus(statusCode);
     }
@@ -32,6 +34,10 @@ public class Response {
 
     public void addHeader(String key, String value) {
         headers.put(key, value);
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 
     private String buildHeaders() {
@@ -50,6 +56,18 @@ public class Response {
 
     public void addBodyContent(String content) {
         body.append(content);
+    }
+
+    public String getBody() {
+        return body.toString();
+    }
+
+    public void setBodyBytes(byte[] bodyBytes) {
+        this.bodyBytes = bodyBytes;
+    }
+
+    public byte[] getBodyBytes() {
+        return bodyBytes;
     }
 
     @Override

@@ -2,7 +2,8 @@ import configuration.ApplicationConfigs;
 import exceptions.InvalidRequestException;
 import http.core.RequestMethod;
 import http.handler.*;
-import http.middleware.EncodingMiddleware;
+import http.middleware.EncodingHeaderReaderMiddleware;
+import http.middleware.GZIPEncoderMiddleware;
 import infrastructure.networking.SocketConnectionHandler;
 import infrastructure.routing.Router;
 import org.apache.commons.cli.ParseException;
@@ -22,7 +23,7 @@ public class Main {
                 .registerRoute(RequestMethod.GET, "/", new RootRequest(null));
         Router
                 .getInstance()
-                .registerRoute(RequestMethod.GET, "/echo/{str}", new EncodingMiddleware(new EchoRequest(null)));
+                .registerRoute(RequestMethod.GET, "/echo/{str}", new EncodingHeaderReaderMiddleware(new EchoRequest(new GZIPEncoderMiddleware(null))));
         Router
                 .getInstance()
                 .registerRoute(RequestMethod.GET, "/user-agent", new UserAgentRequest(null));

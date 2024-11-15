@@ -6,8 +6,8 @@ import http.core.Response;
 import http.interfaces.Handler;
 import infrastructure.networking.HTTPStatusCodes;
 
-public class EncodingMiddleware extends Handler {
-    public EncodingMiddleware(Handler next) {
+public class EncodingHeaderReaderMiddleware extends Handler {
+    public EncodingHeaderReaderMiddleware(Handler next) {
         this.next = next;
     }
 

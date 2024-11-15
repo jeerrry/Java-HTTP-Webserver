@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class SocketConnectionHandler implements Runnable {
     private final Socket socket;
@@ -37,7 +38,8 @@ public class SocketConnectionHandler implements Runnable {
                 response.setStatus(HTTPStatusCodes.NOTFOUND);
                 throw new RuntimeException(e);
             } finally {
-                writer.println(response);
+                socket.getOutputStream().write(response.toString().getBytes(StandardCharsets.UTF_8));
+                socket.getOutputStream().write(response.getBodyBytes());
                 writer.flush();
                 writer.close();
             }
