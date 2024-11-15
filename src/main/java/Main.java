@@ -35,6 +35,12 @@ public class Main {
                         String body = request.getRouteParams().get("str");
                         response.addHeader("Content-Type", "text/plain");
                         response.addHeader("Content-Length", body.length() + "");
+                        if(request.getHeaders().containsKey("Accept-Encoding")) {
+                            String value = request.getHeaders().get("Accept-Encoding");
+                            if(value.equals("gzip")) {
+                                response.addHeader("Content-Encoding", "gzip");
+                            }
+                        }
 
                         response.addBodyContent(body);
 
