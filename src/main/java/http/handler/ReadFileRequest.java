@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class FileReadRequest extends Handler {
-    public FileReadRequest(Handler next) {
+public class ReadFileRequest extends Handler {
+    public ReadFileRequest(Handler next) {
         this.setNext(next);
     }
 
@@ -33,7 +33,7 @@ public class FileReadRequest extends Handler {
 
         try {
             byte[] fileContent = Files.readAllBytes(file.toPath());
-            response.addHeader("Content-Type", "configuration/octet-stream");
+            response.addHeader("Content-Type", "application/octet-stream");
             response.addHeader("Content-Length", fileContent.length + "");
             response.addBodyContent(new String(fileContent));
         } catch (IOException e) {

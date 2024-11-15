@@ -28,7 +28,7 @@ public class Main {
                 .registerRoute(RequestMethod.GET, "/user-agent", new UserAgentRequest(null));
         Router
                 .getInstance()
-                .registerRoute(RequestMethod.GET, "/files/{filename}", new FileReadRequest(null));
+                .registerRoute(RequestMethod.GET, "/files/{filename}", new ReadFileRequest(null));
         Router
                 .getInstance()
                 .registerRoute(RequestMethod.POST, "/files/{filename}", new WriteFileRequest(null));

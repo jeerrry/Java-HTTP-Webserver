@@ -19,8 +19,15 @@ public class EncodingMiddleware extends Handler {
 
         if (request.getHeaders().containsKey("Accept-Encoding")) {
             String value = request.getHeaders().get("Accept-Encoding");
-            if (value.equals("gzip")) {
-                response.addHeader("Content-Encoding", "gzip");
+
+            if (!value.isBlank()) {
+                String[] values = value.split(",");
+                for (String encoding : values) {
+                    if(encoding.isBlank()) continue;
+                    if (ApplicationConfigs.SUPPORTED_COMPRESSIONS.contains(encoding.trim())) {
+                        response.addHeader("Content-Encoding", encoding);
+                    }
+                }
             }
         }
 

@@ -6,10 +6,15 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class ApplicationConfigs {
-    private static ApplicationConfigs instance;
     public static final Protocol PROTOCOL = new Protocol("HTTP", "1.1");
+    public static final Set<String> SUPPORTED_COMPRESSIONS = new HashSet<>(List.of("gzip"));
     private final CommandLine cmd;
+    private static ApplicationConfigs instance;
 
     public static void init(String[] args) throws ParseException {
         if (instance == null) {
