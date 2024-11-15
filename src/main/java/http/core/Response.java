@@ -1,3 +1,8 @@
+package http.core;
+
+import infrastructure.networking.HTTPStatusCodes;
+import infrastructure.networking.Protocol;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 

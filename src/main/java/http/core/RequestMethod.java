@@ -1,3 +1,5 @@
+package http.core;
+
 public enum RequestMethod {
     UNDEFINED, GET, POST, PUT, DELETE;
 

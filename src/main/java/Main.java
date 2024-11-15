@@ -1,3 +1,11 @@
+import configuration.ApplicationConfigs;
+import exceptions.InvalidRequestException;
+import http.core.*;
+import http.core.RequestMethod;
+import infrastructure.networking.HTTPStatusCodes;
+import infrastructure.networking.Protocol;
+import infrastructure.networking.SocketConnectionHandler;
+import infrastructure.routing.Router;
 import org.apache.commons.cli.ParseException;
 
 import java.io.File;
@@ -76,7 +84,7 @@ public class Main {
 
                         try {
                             byte[] fileContent = Files.readAllBytes(file.toPath());
-                            response.addHeader("Content-Type", "application/octet-stream");
+                            response.addHeader("Content-Type", "configuration/octet-stream");
                             response.addHeader("Content-Length", fileContent.length + "");
                             response.addBodyContent(new String(fileContent));
                         } catch (IOException e) {

@@ -1,3 +1,7 @@
+package http.core;
+
+import infrastructure.networking.Protocol;
+
 import java.util.HashMap;
 import java.util.Map;
 

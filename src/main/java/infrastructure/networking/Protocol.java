@@ -1,3 +1,5 @@
+package infrastructure.networking;
+
 public class Protocol {
     private final String name;
     private final String version;

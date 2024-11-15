@@ -1,3 +1,5 @@
+package infrastructure.networking;
+
 public class HTTPStatusCodes {
     public record StatusCode(int code, String message) {
         @Override
