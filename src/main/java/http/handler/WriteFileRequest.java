@@ -8,6 +8,7 @@ import infrastructure.networking.HTTPStatusCodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 public class WriteFileRequest extends Handler {
@@ -24,16 +25,27 @@ public class WriteFileRequest extends Handler {
         String directory = ApplicationConfigs.getInstance().getFilesDirectory();
         String fileName = request.getRouteParams().get("filename");
 
-        var file = new File(directory, fileName);
-        if (directory.isBlank() || file.exists()) {
-            response.setStatus(HTTPStatusCodes.NOTFOUND);
+        if (directory == null || directory.isBlank()) {
+            response.setStatus(HTTPStatusCodes.NOT_FOUND);
+            return response;
+        }
 
+        var file = new File(directory, fileName);
+        try {
+            File canonicalBase = new File(directory).getCanonicalFile();
+            File canonicalFile = file.getCanonicalFile();
+            if (!canonicalFile.toPath().startsWith(canonicalBase.toPath()) || canonicalFile.exists()) {
+                response.setStatus(HTTPStatusCodes.NOT_FOUND);
+                return response;
+            }
+        } catch (IOException e) {
+            response.setStatus(HTTPStatusCodes.NOT_FOUND);
             return response;
         }
 
         try {
             if (file.createNewFile()) {
-                Files.write(file.toPath(), request.getBody().getBytes());
+                Files.write(file.toPath(), request.getBody().getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

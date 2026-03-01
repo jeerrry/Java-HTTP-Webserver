@@ -73,11 +73,9 @@ public class Route {
 
 
         List<String> routeParamNames = currentFullPath != null ? Arrays.stream(currentFullPath.split("/")).filter(x -> x.startsWith("{") && x.endsWith("}")).toList() : new ArrayList<>();
-        for (int i = 0; i < routeParamNames.size(); i++) {
+        for (int i = 0; i < routeParamNames.size() && i < routeParamValues.size(); i++) {
             String param = routeParamNames.get(i).substring(1, routeParamNames.get(i).length() - 1);
-            String value = routeParamValues.get(i);
-
-            request.addPathParam(param, value);
+            request.addPathParam(param, routeParamValues.get(i));
         }
 
         request.updatePath(currentFullPath);

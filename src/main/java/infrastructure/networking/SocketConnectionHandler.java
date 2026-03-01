@@ -7,44 +7,67 @@ import http.core.RequestFactory;
 import http.core.Response;
 import infrastructure.routing.Router;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 public class SocketConnectionHandler implements Runnable {
     private final Socket socket;
-    private final byte[] buffer;
 
     public SocketConnectionHandler(Socket socket) {
         this.socket = socket;
-        buffer = new byte[1024];
     }
 
     @Override
     public void run() {
-        try {
-            InputStream stream = socket.getInputStream();
-            int size = stream.read(buffer);
-            String request = new String(buffer, 0, size);
-
-            var writer = new PrintWriter(socket.getOutputStream());
-            var response = new Response(ApplicationConfigs.PROTOCOL, HTTPStatusCodes.OK);
+        try (socket; OutputStream out = socket.getOutputStream()) {
+            String rawRequest = readRawRequest();
+            Response response;
             try {
-                Request httpRequest = RequestFactory.getRequest(request);
+                Request httpRequest = RequestFactory.getRequest(rawRequest);
                 response = Router.getInstance().handleRequest(httpRequest);
             } catch (InvalidRequestException e) {
-                response.setStatus(HTTPStatusCodes.NOTFOUND);
-                throw new RuntimeException(e);
-            } finally {
-                socket.getOutputStream().write(response.toString().getBytes(StandardCharsets.UTF_8));
-                socket.getOutputStream().write(response.getBodyBytes());
-                writer.flush();
-                writer.close();
+                response = new Response(ApplicationConfigs.PROTOCOL, HTTPStatusCodes.NOT_FOUND);
             }
+            out.write(response.toBytes());
+            out.flush();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Connection error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error handling request: " + e.getMessage());
         }
+    }
+
+    private String readRawRequest() throws IOException {
+        var reader = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        var headerBuilder = new StringBuilder();
+        String line;
+        int contentLength = 0;
+
+        while ((line = reader.readLine()) != null) {
+            if (line.isEmpty()) break;
+            headerBuilder.append(line).append("\r\n");
+            if (line.toLowerCase().startsWith("content-length:")) {
+                contentLength = Integer.parseInt(line.substring(15).trim());
+            }
+        }
+
+        var body = new StringBuilder();
+        if (contentLength > 0) {
+            char[] buffer = new char[contentLength];
+            int totalRead = 0;
+            while (totalRead < contentLength) {
+                int read = reader.read(buffer, totalRead, contentLength - totalRead);
+                if (read == -1) break;
+                totalRead += read;
+            }
+            body.append(buffer, 0, totalRead);
+        }
+
+        return headerBuilder + "\r\n" + body;
     }
 }

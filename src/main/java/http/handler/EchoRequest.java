@@ -6,6 +6,8 @@ import http.core.Response;
 import http.interfaces.Handler;
 import infrastructure.networking.HTTPStatusCodes;
 
+import java.nio.charset.StandardCharsets;
+
 public class EchoRequest extends Handler {
     public EchoRequest(Handler next) {
         this.setNext(next);
@@ -21,13 +23,13 @@ public class EchoRequest extends Handler {
         if (body == null) {
             response.cleanHeaders();
             response.clearBody();
-            response.setStatus(HTTPStatusCodes.NOTFOUND);
+            response.setStatus(HTTPStatusCodes.NOT_FOUND);
 
             return response;
         }
 
         response.addHeader("Content-Type", "text/plain");
-        response.addHeader("Content-Length", body.length() + "");
+        response.addHeader("Content-Length", body.getBytes(StandardCharsets.UTF_8).length + "");
 
         response.addBodyContent(body);
 

@@ -10,40 +10,35 @@ import org.apache.commons.cli.ParseException;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
 
     public static void main(String[] args) throws InvalidRequestException, ParseException {
-        ServerSocket serverSocket;
         ApplicationConfigs.init(args);
 
-        Router
-                .getInstance()
+        Router.getInstance()
                 .registerRoute(RequestMethod.GET, "/", new RootRequest(null));
-        Router
-                .getInstance()
+        Router.getInstance()
                 .registerRoute(RequestMethod.GET, "/echo/{str}", new EncodingHeaderReaderMiddleware(new EchoRequest(new GZIPEncoderMiddleware(null))));
-        Router
-                .getInstance()
+        Router.getInstance()
                 .registerRoute(RequestMethod.GET, "/user-agent", new UserAgentRequest(null));
-        Router
-                .getInstance()
+        Router.getInstance()
                 .registerRoute(RequestMethod.GET, "/files/{filename}", new ReadFileRequest(null));
-        Router
-                .getInstance()
+        Router.getInstance()
                 .registerRoute(RequestMethod.POST, "/files/{filename}", new WriteFileRequest(null));
 
-        try {
-            serverSocket = new ServerSocket(4221);
+        try (ServerSocket serverSocket = new ServerSocket(4221);
+             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             serverSocket.setReuseAddress(true);
+            System.out.println("Server started on port 4221");
             while (true) {
-                Socket clientConnection = serverSocket.accept(); // Wait for connection from client.
-                System.out.println("accepted new connection");
-                new Thread(new SocketConnectionHandler(clientConnection)).start();
+                var clientConnection = serverSocket.accept();
+                executor.submit(new SocketConnectionHandler(clientConnection));
             }
         } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
+            System.err.println("Server error: " + e.getMessage());
         }
     }
 }

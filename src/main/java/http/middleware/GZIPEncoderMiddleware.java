@@ -19,7 +19,7 @@ public class GZIPEncoderMiddleware extends Handler {
     @Override
     public Response handle(Request request, Response response) {
         if (response == null) {
-            response = new Response(ApplicationConfigs.PROTOCOL, HTTPStatusCodes.NOTFOUND);
+            response = new Response(ApplicationConfigs.PROTOCOL, HTTPStatusCodes.NOT_FOUND);
         }
 
         if (!response.getHeaders().containsKey("Content-Encoding")) {

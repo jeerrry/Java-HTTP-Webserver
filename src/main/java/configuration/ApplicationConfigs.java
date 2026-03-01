@@ -14,11 +14,15 @@ public class ApplicationConfigs {
     public static final Protocol PROTOCOL = new Protocol("HTTP", "1.1");
     public static final Set<String> SUPPORTED_COMPRESSIONS = new HashSet<>(List.of("gzip"));
     private final CommandLine cmd;
-    private static ApplicationConfigs instance;
+    private static volatile ApplicationConfigs instance;
 
     public static void init(String[] args) throws ParseException {
         if (instance == null) {
-            instance = new ApplicationConfigs(args);
+            synchronized (ApplicationConfigs.class) {
+                if (instance == null) {
+                    instance = new ApplicationConfigs(args);
+                }
+            }
         }
     }
 

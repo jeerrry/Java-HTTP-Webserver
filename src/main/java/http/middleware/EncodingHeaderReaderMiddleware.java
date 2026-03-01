@@ -23,9 +23,12 @@ public class EncodingHeaderReaderMiddleware extends Handler {
             if (!value.isBlank()) {
                 String[] values = value.split(",");
                 for (String encoding : values) {
-                    if(encoding.isBlank()) continue;
-                    if (ApplicationConfigs.SUPPORTED_COMPRESSIONS.contains(encoding.trim())) {
-                        response.addHeader("Content-Encoding", encoding);
+                    if (encoding.isBlank()) continue;
+                    String trimmed = encoding.trim();
+                    if (trimmed.contains("\r") || trimmed.contains("\n")) continue;
+                    if (ApplicationConfigs.SUPPORTED_COMPRESSIONS.contains(trimmed)) {
+                        response.addHeader("Content-Encoding", trimmed);
+                        break;
                     }
                 }
             }

@@ -10,14 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Router {
-    private static Router instance;
+    private static final Router instance = new Router();
     private final Route route = new Route();
-    private final Map<Object, Handler> routes = new HashMap<>();
+    private final Map<String, Handler> routes = new HashMap<>();
 
     public static Router getInstance() {
-        if (instance == null) {
-            instance = new Router();
-        }
         return instance;
     }
 
@@ -33,7 +30,7 @@ public class Router {
         route.processRequest(request);
         Handler handler = routes.get(request.getRequestMethod() + ":" + request.getPath());
         if (handler == null) {
-            throw new InvalidRequestException("Undefined request path: " + request);
+            throw new InvalidRequestException("Undefined request path: " + request.getPath());
         }
 
         return handler.handle(request, null);
