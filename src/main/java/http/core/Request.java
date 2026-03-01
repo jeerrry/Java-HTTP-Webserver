@@ -1,3 +1,9 @@
+// Request.java
+//
+// Represents a parsed HTTP request. Built by RequestFactory during request
+// parsing and enriched with route parameters by the Route trie during
+// path resolution.
+
 package http.core;
 
 import infrastructure.networking.Protocol;
@@ -14,13 +20,12 @@ public class Request {
     private String body;
 
     public Request(Protocol protocol, RequestMethod requestMethod, String path) {
-        headers = new HashMap<>();
-        routeParams = new HashMap<>();
-        body = "";
-
         this.protocol = protocol;
         this.requestMethod = requestMethod;
         this.path = path;
+        headers = new HashMap<>();
+        routeParams = new HashMap<>();
+        body = "";
     }
 
     public void addHeader(String key, String value) {
@@ -59,7 +64,7 @@ public class Request {
         return path;
     }
 
-    public void updatePath(String newPath) {
-        path = newPath;
+    public void setPath(String path) {
+        this.path = path;
     }
 }

@@ -1,9 +1,18 @@
+// RequestFactory.java
+//
+// Parses raw HTTP/1.1 request strings into Request objects. Handles the
+// request line, headers, and body as defined in RFC 7230. Header parsing
+// uses indexOf(':') to correctly handle colons in header values (e.g.,
+// Host, Authorization, URLs).
+
 package http.core;
 
 import exceptions.InvalidRequestException;
 import infrastructure.networking.Protocol;
 
 public class RequestFactory {
+
+    /** Parses a raw HTTP request string into a structured Request object. */
     public static Request getRequest(String request) throws InvalidRequestException {
         String[] majorParts = request.split("\r\n\r\n", 2);
         String[] headerLines = majorParts[0].split("\r\n");
@@ -29,7 +38,7 @@ public class RequestFactory {
             throw new InvalidRequestException("Malformed request line: " + line);
         }
 
-        RequestMethod method = RequestMethod.contains(parts[0]);
+        RequestMethod method = RequestMethod.fromString(parts[0]);
         if (method == RequestMethod.UNDEFINED) {
             throw new InvalidRequestException("Undefined method: " + parts[0]);
         }

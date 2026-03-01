@@ -1,3 +1,9 @@
+// Router.java
+//
+// Central request dispatcher. Maps resolved route paths to their handler
+// chains using an eager-initialized singleton. The Route trie handles URL
+// matching while this class owns the path-to-handler mapping.
+
 package infrastructure.routing;
 
 import exceptions.InvalidRequestException;
@@ -21,18 +27,22 @@ public class Router {
     private Router() {
     }
 
-    public void registerRoute(RequestMethod method, String rawPath, Handler requestHandler) throws InvalidRequestException {
-        route.patchRouteNodes(method, rawPath);
-        routes.put(method + ":" + rawPath, requestHandler);
+    /** Registers a handler chain for the given method and path template. */
+    public void registerRoute(RequestMethod method, String rawPath, Handler handler) throws InvalidRequestException {
+        route.registerRoute(method, rawPath);
+        routes.put(method + ":" + rawPath, handler);
     }
 
+    /**
+     * Resolves the request path against the route trie and dispatches
+     * to the matching handler chain.
+     */
     public Response handleRequest(Request request) throws InvalidRequestException {
-        route.processRequest(request);
+        route.resolveRequest(request);
         Handler handler = routes.get(request.getRequestMethod() + ":" + request.getPath());
         if (handler == null) {
             throw new InvalidRequestException("Undefined request path: " + request.getPath());
         }
-
         return handler.handle(request, null);
     }
 }

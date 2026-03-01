@@ -1,3 +1,9 @@
+// ApplicationConfigs.java
+//
+// Thread-safe application configuration backed by Apache Commons CLI.
+// Uses volatile + double-checked locking because initialization requires
+// command-line arguments that are only available at startup.
+
 package configuration;
 
 import infrastructure.networking.Protocol;
@@ -13,9 +19,10 @@ import java.util.Set;
 public class ApplicationConfigs {
     public static final Protocol PROTOCOL = new Protocol("HTTP", "1.1");
     public static final Set<String> SUPPORTED_COMPRESSIONS = new HashSet<>(List.of("gzip"));
-    private final CommandLine cmd;
     private static volatile ApplicationConfigs instance;
+    private final CommandLine cmd;
 
+    /** Initializes the singleton with command-line arguments. Must be called once at startup. */
     public static void init(String[] args) throws ParseException {
         if (instance == null) {
             synchronized (ApplicationConfigs.class) {

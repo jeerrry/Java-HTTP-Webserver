@@ -1,3 +1,9 @@
+// EchoRequest.java
+//
+// Echoes the captured path parameter "{str}" back as the response body.
+// Used by the /echo/{str} route. Works with the encoding middleware chain
+// for gzip compression support.
+
 package http.handler;
 
 import configuration.ApplicationConfigs;
@@ -21,10 +27,9 @@ public class EchoRequest extends Handler {
 
         String body = request.getRouteParams().get("str");
         if (body == null) {
-            response.cleanHeaders();
+            response.clearHeaders();
             response.clearBody();
             response.setStatus(HTTPStatusCodes.NOT_FOUND);
-
             return response;
         }
 

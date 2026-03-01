@@ -1,3 +1,9 @@
+// EncodingHeaderReaderMiddleware.java
+//
+// Reads the Accept-Encoding header and sets Content-Encoding on the response
+// if a supported compression scheme is found. Rejects values containing
+// CR/LF characters to prevent HTTP response splitting.
+
 package http.middleware;
 
 import configuration.ApplicationConfigs;
@@ -8,7 +14,7 @@ import infrastructure.networking.HTTPStatusCodes;
 
 public class EncodingHeaderReaderMiddleware extends Handler {
     public EncodingHeaderReaderMiddleware(Handler next) {
-        this.next = next;
+        this.setNext(next);
     }
 
     @Override

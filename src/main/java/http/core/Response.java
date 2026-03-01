@@ -1,3 +1,10 @@
+// Response.java
+//
+// Represents an HTTP response. Supports both text and binary body content
+// for cases like GZIP compression where the body is raw bytes. The toBytes()
+// method serializes the complete response into a single byte array for
+// efficient socket writes.
+
 package http.core;
 
 import infrastructure.networking.HTTPStatusCodes;
@@ -10,14 +17,14 @@ import java.util.Map;
 public class Response {
     private final Protocol protocol;
     private final StringBuilder body;
-    private StringBuilder builder;
+    private StringBuilder statusLine;
     private final Map<String, String> headers;
     private byte[] bodyBytes;
 
     public Response(Protocol protocol, HTTPStatusCodes.StatusCode statusCode) {
-        builder = new StringBuilder();
-        body = new StringBuilder();
         this.protocol = protocol;
+        statusLine = new StringBuilder();
+        body = new StringBuilder();
         headers = new LinkedHashMap<>();
         bodyBytes = new byte[0];
 
@@ -25,11 +32,11 @@ public class Response {
     }
 
     public void setStatus(HTTPStatusCodes.StatusCode statusCode) {
-        builder = new StringBuilder();
-        builder.append(protocol.toString()).append(" ").append(statusCode.toString()).append("\r\n");
+        statusLine = new StringBuilder();
+        statusLine.append(protocol.toString()).append(" ").append(statusCode.toString()).append("\r\n");
     }
 
-    public void cleanHeaders() {
+    public void clearHeaders() {
         headers.clear();
     }
 
@@ -43,11 +50,9 @@ public class Response {
 
     private String buildHeaders() {
         StringBuilder result = new StringBuilder();
-
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             result.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
         }
-
         return result + "\r\n";
     }
 
@@ -72,11 +77,11 @@ public class Response {
     }
 
     /**
-     * Serializes the complete HTTP response into bytes.
+     * Serializes the complete HTTP response (status line, headers, body) into bytes.
      * Uses bodyBytes if set (binary/compressed), otherwise uses the text body.
      */
     public byte[] toBytes() {
-        byte[] headerBytes = (builder.toString() + buildHeaders()).getBytes(StandardCharsets.UTF_8);
+        byte[] headerBytes = (statusLine.toString() + buildHeaders()).getBytes(StandardCharsets.UTF_8);
         byte[] content = bodyBytes.length > 0 ? bodyBytes : body.toString().getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[headerBytes.length + content.length];
         System.arraycopy(headerBytes, 0, result, 0, headerBytes.length);
@@ -86,6 +91,6 @@ public class Response {
 
     @Override
     public String toString() {
-        return builder.toString() + buildHeaders() + body.toString();
+        return statusLine.toString() + buildHeaders() + body.toString();
     }
 }

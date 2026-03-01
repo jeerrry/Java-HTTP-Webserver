@@ -1,6 +1,13 @@
+// HTTPStatusCodes.java
+//
+// HTTP status code constants as StatusCode records. Using records gives
+// us immutable value objects with a clean toString() for serialization
+// into the response status line.
+
 package infrastructure.networking;
 
 public class HTTPStatusCodes {
+
     public record StatusCode(int code, String message) {
         @Override
         public String toString() {

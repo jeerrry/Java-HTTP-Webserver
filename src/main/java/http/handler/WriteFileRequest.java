@@ -1,3 +1,9 @@
+// WriteFileRequest.java
+//
+// Creates new files in the configured directory from the request body.
+// Validates the target path against the base directory to prevent
+// path traversal. Only creates files that don't already exist.
+
 package http.handler;
 
 import configuration.ApplicationConfigs;
@@ -12,8 +18,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 public class WriteFileRequest extends Handler {
-    public WriteFileRequest(Handler handler) {
-        this.setNext(handler);
+    public WriteFileRequest(Handler next) {
+        this.setNext(next);
     }
 
     @Override
@@ -32,6 +38,7 @@ public class WriteFileRequest extends Handler {
 
         var file = new File(directory, fileName);
         try {
+            // Canonicalize paths to prevent traversal attacks
             File canonicalBase = new File(directory).getCanonicalFile();
             File canonicalFile = file.getCanonicalFile();
             if (!canonicalFile.toPath().startsWith(canonicalBase.toPath()) || canonicalFile.exists()) {

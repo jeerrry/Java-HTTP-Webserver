@@ -1,3 +1,7 @@
+// RootRequest.java
+//
+// Handles the root path ("/"). Returns a simple 200 OK response.
+
 package http.handler;
 
 import configuration.ApplicationConfigs;
@@ -7,13 +11,14 @@ import http.interfaces.Handler;
 import infrastructure.networking.HTTPStatusCodes;
 
 public class RootRequest extends Handler {
-    public RootRequest(Handler handler) {
-        setNext(handler);
+    public RootRequest(Handler next) {
+        this.setNext(next);
     }
 
     @Override
     public Response handle(Request request, Response response) {
         response = new Response(ApplicationConfigs.PROTOCOL, HTTPStatusCodes.OK);
+
         if (next != null) {
             return next.handle(request, response);
         }

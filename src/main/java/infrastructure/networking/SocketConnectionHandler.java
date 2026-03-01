@@ -1,3 +1,10 @@
+// SocketConnectionHandler.java
+//
+// Handles a single HTTP connection on a virtual thread. Reads the raw
+// request (headers line-by-line, then Content-Length bytes for body),
+// dispatches to the router, and writes the serialized response.
+// The socket is closed via try-with-resources to prevent file descriptor leaks.
+
 package infrastructure.networking;
 
 import configuration.ApplicationConfigs;
@@ -15,6 +22,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 public class SocketConnectionHandler implements Runnable {
+    private static final String CONTENT_LENGTH_PREFIX = "content-length:";
     private final Socket socket;
 
     public SocketConnectionHandler(Socket socket) {
@@ -41,6 +49,10 @@ public class SocketConnectionHandler implements Runnable {
         }
     }
 
+    /**
+     * Reads the full HTTP request: headers line-by-line until the blank line,
+     * then exactly Content-Length bytes for the body.
+     */
     private String readRawRequest() throws IOException {
         var reader = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
@@ -51,8 +63,9 @@ public class SocketConnectionHandler implements Runnable {
         while ((line = reader.readLine()) != null) {
             if (line.isEmpty()) break;
             headerBuilder.append(line).append("\r\n");
-            if (line.toLowerCase().startsWith("content-length:")) {
-                contentLength = Integer.parseInt(line.substring(15).trim());
+            if (line.toLowerCase().startsWith(CONTENT_LENGTH_PREFIX)) {
+                contentLength = Integer.parseInt(
+                        line.substring(CONTENT_LENGTH_PREFIX.length()).trim());
             }
         }
 

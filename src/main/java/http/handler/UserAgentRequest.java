@@ -1,3 +1,8 @@
+// UserAgentRequest.java
+//
+// Returns the User-Agent header value from the request as the response body.
+// Returns 404 if the User-Agent header is missing or empty.
+
 package http.handler;
 
 import configuration.ApplicationConfigs;
@@ -24,6 +29,7 @@ public class UserAgentRequest extends Handler {
             response.setStatus(HTTPStatusCodes.NOT_FOUND);
             return response;
         }
+
         response.addHeader("Content-Type", "text/plain");
         response.addHeader("Content-Length", body.getBytes(StandardCharsets.UTF_8).length + "");
 

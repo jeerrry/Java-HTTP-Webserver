@@ -1,3 +1,12 @@
+// Route.java
+//
+// Trie-based URL router. Each node represents a path segment, with "{*}"
+// nodes matching dynamic parameters. Resolves incoming request paths against
+// registered routes and extracts named path parameters.
+//
+// Example: registering "/echo/{str}" creates nodes: root -> "echo" -> "{*}"
+// A request to "/echo/hello" resolves to that route with str="hello".
+
 package infrastructure.routing;
 
 import exceptions.InvalidRequestException;
@@ -7,60 +16,69 @@ import http.core.RequestMethod;
 import java.util.*;
 
 public class Route {
-    private String value = "/";
+    private String segment = "/";
     private String fullPath;
-    private boolean isComplete;
-    private HashSet<RequestMethod> methods = new HashSet<>();
-    private Map<String, Route> paths = new HashMap<>();
+    private boolean complete;
+    private final Set<RequestMethod> methods = new HashSet<>();
+    private final Map<String, Route> children = new HashMap<>();
 
-    public void patchRouteNodes(RequestMethod method, String rawPath) throws InvalidRequestException {
+    /**
+     * Inserts a route into the trie. Dynamic path segments like "{str}" are
+     * stored under the wildcard key "{*}" to enable single-lookup matching.
+     */
+    public void registerRoute(RequestMethod method, String rawPath) throws InvalidRequestException {
         Route current = this;
-        String[] fullPath = rawPath.split("/");
-        for (int i = 0; i < fullPath.length; i++) {
-            String path = fullPath[i];
-            if (path.isBlank()) continue;
+        String[] segments = rawPath.split("/");
 
-            boolean isDynamic = path.startsWith("{") && path.endsWith("}");
-            path = isDynamic ? "{*}" : path;
-            if (!current.paths.containsKey(path)) {
+        for (String seg : segments) {
+            if (seg.isBlank()) continue;
+
+            boolean isDynamic = seg.startsWith("{") && seg.endsWith("}");
+            String key = isDynamic ? "{*}" : seg;
+
+            if (!current.children.containsKey(key)) {
                 var route = new Route();
-                route.value = path;
-                current.paths.put(path, route);
+                route.segment = key;
+                current.children.put(key, route);
             }
-            current = current.paths.get(path);
+            current = current.children.get(key);
         }
 
-        if (current.isComplete && current.methods.contains(method)) {
+        if (current.complete && current.methods.contains(method)) {
             throw new InvalidRequestException("Provided path already exists");
         }
 
-        current.isComplete = true;
+        current.complete = true;
         current.fullPath = rawPath;
         current.methods.add(method);
     }
 
-    public void processRequest(Request request) throws InvalidRequestException {
+    /**
+     * Resolves a request path against the trie, extracts dynamic parameters,
+     * and updates the request with the matched route template path.
+     */
+    public void resolveRequest(Request request) throws InvalidRequestException {
         Route current = this;
-        String[] fullPath = request.getPath().split("/");
+        String[] segments = request.getPath().split("/");
         var routeParamValues = new ArrayList<String>();
         boolean validPath = true;
-        String currentFullPath = "/";
+        String matchedPath = "/";
 
-        for (String path : fullPath) {
-            if (path.isBlank()) continue;
+        for (String seg : segments) {
+            if (seg.isBlank()) continue;
 
-            if (current.paths.containsKey(path)) {
-                current = current.paths.get(path);
-                currentFullPath = current.fullPath;
-                validPath = current.isComplete && current.methods.contains(request.getRequestMethod());
+            if (current.children.containsKey(seg)) {
+                current = current.children.get(seg);
+                matchedPath = current.fullPath;
+                validPath = current.complete && current.methods.contains(request.getRequestMethod());
                 continue;
             }
 
-            if (current.paths.containsKey("{*}")) {
-                current = current.paths.get("{*}");
-                validPath = current.isComplete && current.methods.contains(request.getRequestMethod());
-                currentFullPath = current.fullPath;
-                routeParamValues.add(path);
+            if (current.children.containsKey("{*}")) {
+                current = current.children.get("{*}");
+                validPath = current.complete && current.methods.contains(request.getRequestMethod());
+                matchedPath = current.fullPath;
+                routeParamValues.add(seg);
                 continue;
             }
 
@@ -71,13 +89,18 @@ public class Route {
             throw new InvalidRequestException("Provided path does not exist");
         }
 
+        // Extract named parameters from the route template and pair them with captured values
+        List<String> routeParamNames = matchedPath != null
+                ? Arrays.stream(matchedPath.split("/"))
+                    .filter(x -> x.startsWith("{") && x.endsWith("}"))
+                    .toList()
+                : new ArrayList<>();
 
-        List<String> routeParamNames = currentFullPath != null ? Arrays.stream(currentFullPath.split("/")).filter(x -> x.startsWith("{") && x.endsWith("}")).toList() : new ArrayList<>();
         for (int i = 0; i < routeParamNames.size() && i < routeParamValues.size(); i++) {
             String param = routeParamNames.get(i).substring(1, routeParamNames.get(i).length() - 1);
             request.addPathParam(param, routeParamValues.get(i));
         }
 
-        request.updatePath(currentFullPath);
+        request.setPath(matchedPath);
     }
 }

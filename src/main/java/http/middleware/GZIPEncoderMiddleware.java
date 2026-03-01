@@ -1,3 +1,9 @@
+// GZIPEncoderMiddleware.java
+//
+// Compresses the text response body with GZIP when Content-Encoding is set
+// to "gzip". Replaces the text body with compressed bytes and updates
+// Content-Length to reflect the compressed size.
+
 package http.middleware;
 
 import configuration.ApplicationConfigs;
@@ -32,7 +38,7 @@ public class GZIPEncoderMiddleware extends Handler {
 
         var body = response.getBody();
         var byteArrayOutputStream = new ByteArrayOutputStream();
-        try(var gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+        try (var gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
             gzipOutputStream.write(body.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException(e);

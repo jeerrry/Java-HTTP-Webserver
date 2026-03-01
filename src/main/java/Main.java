@@ -1,3 +1,9 @@
+// Main.java
+//
+// Server entry point. Registers HTTP routes with their handler chains,
+// starts a virtual-thread-backed server socket, and dispatches each
+// accepted connection to a SocketConnectionHandler.
+
 import configuration.ApplicationConfigs;
 import exceptions.InvalidRequestException;
 import http.core.RequestMethod;
@@ -14,25 +20,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
+    private static final int SERVER_PORT = 4221;
 
     public static void main(String[] args) throws InvalidRequestException, ParseException {
         ApplicationConfigs.init(args);
 
-        Router.getInstance()
-                .registerRoute(RequestMethod.GET, "/", new RootRequest(null));
-        Router.getInstance()
-                .registerRoute(RequestMethod.GET, "/echo/{str}", new EncodingHeaderReaderMiddleware(new EchoRequest(new GZIPEncoderMiddleware(null))));
-        Router.getInstance()
-                .registerRoute(RequestMethod.GET, "/user-agent", new UserAgentRequest(null));
-        Router.getInstance()
-                .registerRoute(RequestMethod.GET, "/files/{filename}", new ReadFileRequest(null));
-        Router.getInstance()
-                .registerRoute(RequestMethod.POST, "/files/{filename}", new WriteFileRequest(null));
+        Router router = Router.getInstance();
+        router.registerRoute(RequestMethod.GET, "/", new RootRequest(null));
+        router.registerRoute(RequestMethod.GET, "/echo/{str}",
+                new EncodingHeaderReaderMiddleware(new EchoRequest(new GZIPEncoderMiddleware(null))));
+        router.registerRoute(RequestMethod.GET, "/user-agent", new UserAgentRequest(null));
+        router.registerRoute(RequestMethod.GET, "/files/{filename}", new ReadFileRequest(null));
+        router.registerRoute(RequestMethod.POST, "/files/{filename}", new WriteFileRequest(null));
 
-        try (ServerSocket serverSocket = new ServerSocket(4221);
+        // Virtual threads handle blocking I/O without tying up platform threads
+        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
              ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             serverSocket.setReuseAddress(true);
-            System.out.println("Server started on port 4221");
+            System.out.println("Server started on port " + SERVER_PORT);
             while (true) {
                 var clientConnection = serverSocket.accept();
                 executor.submit(new SocketConnectionHandler(clientConnection));

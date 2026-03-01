@@ -1,3 +1,9 @@
+// ReadFileRequest.java
+//
+// Serves files from the configured directory as application/octet-stream.
+// Validates the requested path against the base directory to prevent
+// path traversal attacks (e.g., "../../../etc/passwd").
+
 package http.handler;
 
 import configuration.ApplicationConfigs;
@@ -31,6 +37,7 @@ public class ReadFileRequest extends Handler {
 
         var file = new File(directory, fileName);
         try {
+            // Canonicalize paths to prevent traversal attacks like "../../../etc/passwd"
             File canonicalBase = new File(directory).getCanonicalFile();
             File canonicalFile = file.getCanonicalFile();
             if (!canonicalFile.toPath().startsWith(canonicalBase.toPath()) || !canonicalFile.exists()) {
